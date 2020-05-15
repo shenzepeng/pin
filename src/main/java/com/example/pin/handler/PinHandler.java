@@ -25,16 +25,16 @@ public interface PinHandler {
      * 即IDA||IDM||Ekm{ IDA||IDM|| Eksa[   IDM||IDA||Ekm [PIN||COUNT||Data’]  ]||Data }
      * @param arbitration
      */
-    SentToBusinessInfo verArbitration(SentArbitration arbitration);
+    SentToBusinessInfo verArbitration(String A,String privateMKey,SentArbitration arbitration);
 
     /**
      * 第三步：商家M用自己的密钥解密第二步收到的消息，
      * 再用A的公开钥解密验证二维码内信息的正确性后，将二维码打印出来。
-     * @param publicSecret
+     * @param publicMSecret
      * @param sentToBusinessInfo
      * @return
      */
-    QrCode getInfo(String publicSecret,SentToBusinessInfo sentToBusinessInfo);
+    QrCode getInfo(String publicMSecret,String publicASecret,SentToBusinessInfo sentToBusinessInfo);
 
     /**
      * 第四步：客户C扫描二维码，
