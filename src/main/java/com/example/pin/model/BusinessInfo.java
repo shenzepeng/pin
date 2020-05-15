@@ -29,4 +29,8 @@ public class BusinessInfo {
      *      日期
      */
     private Date DATA;
+    /**
+     * qian
+     */
+    public double money;
 }

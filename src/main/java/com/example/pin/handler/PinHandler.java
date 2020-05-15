@@ -43,7 +43,7 @@ public interface PinHandler {
      * @param qrCode
      * @return
      */
-    String getInfo(String publicKey,QrCode qrCode );
+    String getInfo(String publicKey,QrCode qrCode);
     /**
      * 第五步：客户C把第四步得到的信息，
      * 加上IDC, IDM, IDA, Date, Money，
@@ -52,5 +52,14 @@ public interface PinHandler {
      *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
      * A用PIN作为密钥，将IDA, IDC, IDM,COUNT, Money, Date加密发送给客户C。
      */
-    String getPin(String msg);
+    String getPin(String msg,String keyC,String keyA);
+
+    /**
+     *  *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
+     *      * A用PIN作为密钥，将IDA, IDC, IDM,COUNT, Money, Date加密发送给客户C。
+     * @param msg
+     * @param
+     * @return
+     */
+     String getMsg(String msg);
 }
