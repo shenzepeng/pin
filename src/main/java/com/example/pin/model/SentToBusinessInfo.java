@@ -10,4 +10,5 @@ public class SentToBusinessInfo {
     private String IDA;
     private String IDM;
     private String Ekm;
+    private Long date;
 }

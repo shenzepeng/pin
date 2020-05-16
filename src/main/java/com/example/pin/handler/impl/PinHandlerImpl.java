@@ -1,5 +1,7 @@
 package com.example.pin.handler.impl;
 
+import com.example.pin.dto.ForthInfoDto;
+import com.example.pin.dto.ToFiveDto;
 import com.example.pin.handler.PinHandler;
 import com.example.pin.model.BusinessInfo;
 import com.example.pin.model.QrCode;
@@ -7,15 +9,10 @@ import com.example.pin.model.SentArbitration;
 import com.example.pin.model.SentToBusinessInfo;
 import com.example.pin.utils.DesUtil;
 import com.example.pin.utils.JsonUtils;
-import com.example.pin.utils.RSAUtils;
 import com.example.pin.utils.RsaTool;
 import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import sun.security.krb5.internal.crypto.Des;
-
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 
 /**
  * 要写注释呀
@@ -50,21 +47,22 @@ public class PinHandlerImpl implements PinHandler {
     @SneakyThrows
     @Override
     public SentToBusinessInfo verArbitration(String aKey,String mKey,SentArbitration arbitration) {
-        System.out.println("第一步"+aKey+"arbitration   "+arbitration);
+        System.out.println("第二步"+aKey+"arbitration   "+arbitration);
         String toJson = JsonUtils.objectToJson(arbitration);
+        String decryptByPrivateKey = RsaTool.decryptByPrivateKey(toJson, aKey);
         SentToBusinessInfo sentToBusinessInfo=new SentToBusinessInfo();
-
-        sentToBusinessInfo.setEkm(decrypt);
+        sentToBusinessInfo.setEkm(decryptByPrivateKey);
+        sentToBusinessInfo.setDate(System.currentTimeMillis());
         BeanUtils.copyProperties(arbitration,sentToBusinessInfo);
         String json = JsonUtils.objectToJson(sentToBusinessInfo);
-        String s = DesUtil.encrypt(json, mKey);
+        String encryptByPrivateKey = RsaTool.encryptByPrivateKey(mKey, json);
         SentToBusinessInfo sent=new SentToBusinessInfo();
         BeanUtils.copyProperties(sentToBusinessInfo,sent);
-        sent.setEkm(s);
+        sent.setEkm(encryptByPrivateKey);
         return sentToBusinessInfo;
     }
     /**
-     * 第三步：商家M用自己的密钥解密第二步收到的消息，
+     * 第三步：商家M用自己的公密钥解密第二步收到的消息，
      * 再用A的公开钥解密验证二维码内信息的正确性后，将二维码打印出来。
      * @param
      * @param sentToBusinessInfo
@@ -72,26 +70,29 @@ public class PinHandlerImpl implements PinHandler {
      */
     @SneakyThrows
     @Override
-    public QrCode getInfo(String mSecret, String aSecret,SentToBusinessInfo sentToBusinessInfo) {
+    public QrCode getInfo(String mPs, String aSk,SentToBusinessInfo sentToBusinessInfo) {
         String sentToBusinessInfoEkm = sentToBusinessInfo.getEkm();
-        String decrypt = DesUtil.decrypt(aSecret, sentToBusinessInfoEkm);
+        String decrypt = RsaTool.encryptByPublicKey(mPs, sentToBusinessInfoEkm);
+        SentToBusinessInfo sent = JsonUtils.jsonToPojo(decrypt, SentToBusinessInfo.class);
+        String ekm = sent.getEkm();
+        String encryptByPublicKey = RsaTool.encryptByPublicKey(aSk, ekm);
         QrCode qrCode=new QrCode();
-        BeanUtils.copyProperties(sentToBusinessInfo,qrCode);
-        qrCode.setEksa(decrypt);
+        BeanUtils.copyProperties(sent,qrCode);
+        qrCode.setEksa(ekm);
         return qrCode;
     }
     /**
      * 第四步：客户C扫描二维码，
      * C用A的钥解密二维码获得M加密过的信息，即Ekm[PIN||COUNT||Date]。
-     * @param publicKey
+     * @param pAk
      * @param qrCode
      * @return
      */
     @SneakyThrows
     @Override
-    public String getInfo(String publicKey, QrCode qrCode) {
+    public String getInfo(String pAk, QrCode qrCode) {
         String eksa = qrCode.getEksa();
-        String decrypt = DesUtil.decrypt(eksa, eksa);
+        String decrypt = RsaTool.encryptByPrivateKey(eksa, pAk);
         return decrypt;
     }
     /**
@@ -99,22 +100,39 @@ public class PinHandlerImpl implements PinHandler {
      * 加上IDC, IDM, IDA, Date, Money，
      * 一起用自己的密钥加密后，发送给仲裁者A。
      * 即IDC||IDM||IDA||Ekc[Ekm[PIN||COUNT||Data’]||IDC||IDM||IDA||Date||Money]
-     *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
-     * A用PIN作为密钥，将IDA, IDC, IDM,COUNT, Money, Date加密发送给客户C。
      */
     @SneakyThrows
     @Override
-    public String getPin(String msg,String keyC,String keyA)
-    {
-        String encrypt = DesUtil.encrypt(msg, keyC);
-        String decrypt = DesUtil.decrypt(encrypt, keyA);
-        return decrypt;
+    public ToFiveDto getPin(String msg,String keyC,BusinessInfo businessInfo,String IDC) {
+        ForthInfoDto forthInfoDto=new ForthInfoDto();
+        forthInfoDto.setBusinessInfo(businessInfo);
+        forthInfoDto.setMsg(msg);
+        ToFiveDto fiveDto=new ToFiveDto();
+        fiveDto.setIDA(fiveDto.getIDA());
+        String objectToJson = JsonUtils.objectToJson(forthInfoDto);
+        String decryptByPrivateKey = RsaTool.encryptByPrivateKey(objectToJson, keyC);
+        fiveDto.setIDC(IDC);
+        fiveDto.setIDC(IDC);
+        fiveDto.setMsg(decryptByPrivateKey);
+        return fiveDto;
     }
+
+    /**
+     * *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
+     *      * A用PIN作为密钥，将IDA, IDC, IDM,COUNT, Money, Date加密发送给客户C。
+     * @param toFiveDto
+     * @param cpk
+     * @param pAk
+     * @return
+     */
     @SneakyThrows
     @Override
-    public String getMsg(String msg){
+    public String getMsg(ToFiveDto toFiveDto,String cpk,String pAk){
+        String msg = toFiveDto.getMsg();
         BusinessInfo businessInfo = JsonUtils.jsonToPojo(msg, BusinessInfo.class);
-        String decrypt = DesUtil.decrypt(msg, businessInfo.getPIN());
+        String decryptByPrivateKey = RsaTool.decryptByPrivateKey(msg, cpk);
+        String decryptByPublicKey = RsaTool.decryptByPublicKey(decryptByPrivateKey, pAk);
+        String decrypt = DesUtil.decrypt(decryptByPublicKey, businessInfo.getPIN());
         return decrypt;
     }
 }

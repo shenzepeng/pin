@@ -1,5 +1,7 @@
 package com.example.pin.handler;
 
+import com.example.pin.dto.ForthInfoDto;
+import com.example.pin.dto.ToFiveDto;
 import com.example.pin.model.BusinessInfo;
 import com.example.pin.model.QrCode;
 import com.example.pin.model.SentArbitration;
@@ -52,7 +54,7 @@ public interface PinHandler {
      *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
      * A用PIN作为密钥，将IDA, IDC, IDM,COUNT, Money, Date加密发送给客户C。
      */
-    String getPin(String msg,String keyC,String keyA);
+    ToFiveDto getPin(String msg, String keyC, BusinessInfo businessInfo, String IDC);
 
     /**
      *  *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
@@ -61,5 +63,5 @@ public interface PinHandler {
      * @param
      * @return
      */
-     String getMsg(String msg);
+     String getMsg(ToFiveDto toFiveDto,String cpk,String pAk);
 }
