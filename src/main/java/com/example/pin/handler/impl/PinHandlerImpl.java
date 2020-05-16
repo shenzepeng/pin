@@ -8,6 +8,7 @@ import com.example.pin.model.SentToBusinessInfo;
 import com.example.pin.utils.DesUtil;
 import com.example.pin.utils.JsonUtils;
 import com.example.pin.utils.RSAUtils;
+import com.example.pin.utils.RsaTool;
 import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -29,12 +30,13 @@ public class PinHandlerImpl implements PinHandler {
      */
     @SneakyThrows
     @Override
-    public SentArbitration sentArbitration(String mSecret, BusinessInfo businessInfo) {
+    public SentArbitration sentArbitration(String msk, BusinessInfo businessInfo) {
+        System.out.println("第一步"+msk+"businessInfo   "+businessInfo);
         String business = JsonUtils.objectToJson(businessInfo);
-        String decrypt = DesUtil.encrypt(business, mSecret);
+        String ekm = RsaTool.encryptByPrivateKey(business, msk);
         SentArbitration sentArbitration=new SentArbitration();
         BeanUtils.copyProperties(businessInfo,sentArbitration);
-        sentArbitration.setEkm(decrypt);
+        sentArbitration.setEkm(ekm);
         return sentArbitration;
     }
     /**
@@ -48,9 +50,10 @@ public class PinHandlerImpl implements PinHandler {
     @SneakyThrows
     @Override
     public SentToBusinessInfo verArbitration(String aKey,String mKey,SentArbitration arbitration) {
+        System.out.println("第一步"+aKey+"arbitration   "+arbitration);
         String toJson = JsonUtils.objectToJson(arbitration);
         SentToBusinessInfo sentToBusinessInfo=new SentToBusinessInfo();
-        String decrypt = DesUtil.encrypt(toJson, aKey);
+
         sentToBusinessInfo.setEkm(decrypt);
         BeanUtils.copyProperties(arbitration,sentToBusinessInfo);
         String json = JsonUtils.objectToJson(sentToBusinessInfo);
