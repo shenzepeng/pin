@@ -15,10 +15,10 @@ public interface PinHandler {
      *商家M用自己的密钥把IDM，IDA,PIN,COUNT,DATA加密，作为签名，发送给仲裁者A
      * 其中IDM是商家的信息，IDA是仲裁者A的信息，PIN是商家自己记住的码，用来口头报予用户。COUNT是商家的账号，DATA是商品信息。
      * 即IDM ||IDA||Date||Ekm[ IDM||IDA||PIN||COUNT||Date]
-     * @param privateSecret
+     * @param msk
      * @param businessInfo
      */
-    SentArbitration sentArbitration(String privateSecret, BusinessInfo businessInfo);
+    SentArbitration sentArbitration1(String msk, BusinessInfo businessInfo);
 
     /**
      *：仲裁者A把第一步接收到的Ekm[PIN||COUNT||Date]，加上IDM，IDA一起用A的私秘钥加密，形成二维码。
@@ -27,7 +27,7 @@ public interface PinHandler {
      * 即IDA||IDM||Ekm{ IDA||IDM|| Eksa[   IDM||IDA||Ekm [PIN||COUNT||Data’]  ]||Data }
      * @param arbitration
      */
-    SentToBusinessInfo verArbitration(String A,String privateMKey,SentArbitration arbitration);
+    SentToBusinessInfo verArbitration2(String ask,String msk,SentArbitration arbitration);
 
     /**
      * 第三步：商家M用自己的密钥解密第二步收到的消息，
@@ -36,7 +36,7 @@ public interface PinHandler {
      * @param sentToBusinessInfo
      * @return
      */
-    QrCode getInfo(String publicMSecret,String publicASecret,SentToBusinessInfo sentToBusinessInfo);
+    QrCode getInfo3(String publicMSecret,String apk,SentToBusinessInfo sentToBusinessInfo);
 
     /**
      * 第四步：客户C扫描二维码，
@@ -45,7 +45,7 @@ public interface PinHandler {
      * @param qrCode
      * @return
      */
-    String getInfo(String publicKey,QrCode qrCode);
+    String getInfo4(String publicKey,QrCode qrCode);
     /**
      * 第五步：客户C把第四步得到的信息，
      * 加上IDC, IDM, IDA, Date, Money，
@@ -54,7 +54,7 @@ public interface PinHandler {
      *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
      * A用PIN作为密钥，将IDA, IDC, IDM,COUNT, Money, Date加密发送给客户C。
      */
-    ToFiveDto getPin(String msg, String keyC, BusinessInfo businessInfo, String IDC);
+    ToFiveDto getPin5(String msg, String keyC, BusinessInfo businessInfo, String IDC);
 
     /**
      *  *第六步：仲裁者A把第五步收到的信息进行解密，得到PIN,Money,COUNT,Date。
@@ -63,5 +63,5 @@ public interface PinHandler {
      * @param
      * @return
      */
-     String getMsg(ToFiveDto toFiveDto,String cpk,String pAk);
+     String getMsg6(ToFiveDto toFiveDto,String upk,String apk,String pin);
 }
