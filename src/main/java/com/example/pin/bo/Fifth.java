@@ -1,32 +1,34 @@
 package com.example.pin.bo;
 
-import com.example.pin.PinApplication;
 import com.example.pin.constanst.Constant;
 import com.example.pin.utils.RsaTool;
 import lombok.Data;
+import lombok.SneakyThrows;
 
 import java.util.Map;
 
 /**
- * 要写注释呀
+ * IDC||IDM||IDA||Ekc
  */
 @Data
-public class First {
-    private String IDM ;
+public class Fifth {
+    private String IDC;
+    private String IDM;
     private String IDA;
-    private long date;
-    private String Ekm;
-    public First(){
+    private String Ekc;
+    public Fifth(){
         this.IDM= Constant.IDM;
         this.IDA=Constant.IDA;
-        this.date=System.currentTimeMillis();
+        this.IDC=Constant.IDC;
     }
-    public static void getFirstString(){
+    @SneakyThrows
+    public static void getFifth(){
         Map<String, Object> init = RsaTool.init();
         String privateKey = RsaTool.getPrivateKey(init);
+        Thread.sleep(10L);
         String encryptByPrivateKey = RsaTool.encryptByPrivateKey(System.currentTimeMillis() + "", privateKey);
-        First first=new First();
-        first.setEkm(encryptByPrivateKey);
-        System.out.println(first);
+        Fifth fifth=new Fifth();
+        fifth.setEkc(encryptByPrivateKey);
+        System.out.println(fifth);
     }
 }

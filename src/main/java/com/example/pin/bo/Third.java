@@ -1,9 +1,9 @@
 package com.example.pin.bo;
 
-import com.example.pin.PinApplication;
 import com.example.pin.constanst.Constant;
 import com.example.pin.utils.RsaTool;
 import lombok.Data;
+import lombok.SneakyThrows;
 
 import java.util.Map;
 
@@ -11,22 +11,26 @@ import java.util.Map;
  * 要写注释呀
  */
 @Data
-public class First {
-    private String IDM ;
+public class Third {
+    private String IDM;
     private String IDA;
-    private long date;
-    private String Ekm;
-    public First(){
+    /**
+     * 签名
+     */
+    private String Eksa;
+    public Third(){
         this.IDM= Constant.IDM;
         this.IDA=Constant.IDA;
-        this.date=System.currentTimeMillis();
     }
-    public static void getFirstString(){
+
+    @SneakyThrows
+    public static void getThird(){
         Map<String, Object> init = RsaTool.init();
         String privateKey = RsaTool.getPrivateKey(init);
+        Thread.sleep(100L);
         String encryptByPrivateKey = RsaTool.encryptByPrivateKey(System.currentTimeMillis() + "", privateKey);
-        First first=new First();
-        first.setEkm(encryptByPrivateKey);
-        System.out.println(first);
+        Third third=new Third();
+        third.setEksa(encryptByPrivateKey);
+        System.out.println(third);
     }
 }

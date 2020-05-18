@@ -1,6 +1,5 @@
 package com.example.pin.bo;
 
-import com.example.pin.PinApplication;
 import com.example.pin.constanst.Constant;
 import com.example.pin.utils.RsaTool;
 import lombok.Data;
@@ -8,25 +7,23 @@ import lombok.Data;
 import java.util.Map;
 
 /**
- * 要写注释呀
+ * IDA||IDM||Ekm{ IDA||IDM|| Eksa[   IDM||IDA||Ekm [PIN||COUNT||Data’]
  */
 @Data
-public class First {
+public class Second {
     private String IDM ;
     private String IDA;
-    private long date;
     private String Ekm;
-    public First(){
+    public Second(){
         this.IDM= Constant.IDM;
         this.IDA=Constant.IDA;
-        this.date=System.currentTimeMillis();
     }
-    public static void getFirstString(){
+    public static void getSecond(){
         Map<String, Object> init = RsaTool.init();
         String privateKey = RsaTool.getPrivateKey(init);
         String encryptByPrivateKey = RsaTool.encryptByPrivateKey(System.currentTimeMillis() + "", privateKey);
-        First first=new First();
-        first.setEkm(encryptByPrivateKey);
-        System.out.println(first);
+        Second second=new Second();
+        second.setEkm(encryptByPrivateKey);
+        System.out.println(second);
     }
 }

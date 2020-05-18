@@ -144,7 +144,7 @@ public class PinHandlerImpl implements PinHandler {
     @Override
     public String getMsg6(ToFiveDto toFiveDto,String cpk,String pAk,String pin){
         String msg = toFiveDto.getMsg();
-        String decrypt = DesUtil.encrypt(UUID.randomUUID().toString(), pin);
+        String decrypt = DesUtil.encrypt(msg, pin);
         return decrypt;
     }
 }
